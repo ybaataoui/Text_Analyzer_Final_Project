@@ -2,11 +2,21 @@ import java.util.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * a class that analyze a text and print the words concurrency and print the first 20 words sorted
+ * @author Baataoui Youssef
+ *
+ */
 
 public class TextAnalyzer {
+	
+	/**
+	 * 
+	 * @param args the command line arguments - unused
+	 * @throws IOException to generate and exception if an error occurs during handling the file
+	 */
 
 	public static void main(String[] args) throws IOException {
 		TextAnalyzer TA = new TextAnalyzer();
@@ -35,7 +45,12 @@ public class TextAnalyzer {
 
 	}
 	
-	//Sort the last 20 words descendant 
+	/**
+	 * reverseMapOrder is a function that takes a map as parameter, sort it, 
+	 * and put just the first 20 words in a new map
+	 * @param words is a map parameter
+	 * @return returns a sorted map of 20 workds
+	 */
 	public LinkedHashMap<String, Integer> reverseMapOrder(Map<String, Integer> words){
 
         LinkedHashMap<String, Integer> reverseSortedMap = new LinkedHashMap<>();
@@ -50,7 +65,15 @@ public class TextAnalyzer {
 		return reverseSortedMap;	
 	}
 	
+	
 	//A function that substring a string between two strings.
+	/**
+	 * Between is a function that substratct a string from another string using start word and end word
+	 * @param STR is a parameter represent the whole text
+	 * @param FirstString is a parameter that represent the start word 
+	 * @param LastString is a parameter that represent the end word
+	 * @return a specific string
+	 */
 	public static String Between(String STR , String FirstString, String LastString)
     {       
            
@@ -58,6 +81,11 @@ public class TextAnalyzer {
         
         return FinalString;
     }
+	
+	/**
+	 * a function that returns the file path.
+	 * @return returns a file location
+	 */
 	
 	public String FilePath() {
 		

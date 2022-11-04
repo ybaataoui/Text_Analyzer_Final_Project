@@ -7,13 +7,23 @@ import java.util.LinkedHashMap;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * a test class that test the TextAnalyzer class
+ * @author Baataoui Youssef
+ *
+ */
 class JunitTest {
+	
+	/**
+	 * test all methods in this file
+	 * @throws IOException in case if a problem happens when handling a file
+	 */
 
 	//This test check the between function if it returns exactly the text between START and END.
 	@Test
 	void test() throws IOException {
 		TextAnalyzer test = new TextAnalyzer();
-		String original = " OF THE PROJECT GUTENBERG EBOOK THE RAVEN ***\r\n"
+		String original = "OF THE PROJECT GUTENBERG EBOOK THE RAVEN ***\r\n"
 				+ "THIS EBOOK WAS ONE OF PROJECT GUTENBERG’S EARLY FILES. THERE IS AN IMPROVED ILLUSTRATED EDITION OF THIS TITLE WHICH MAY VIEWED AT EBOOK [ #45484 ]\r\n"
 				+ "The Raven\r\n"
 				+ "by Edgar Allan Poe\r\n"
@@ -153,7 +163,9 @@ class JunitTest {
 		assertEquals(original, str);
 	}
 
-	//test if the path is correct
+	/**
+	 * test if the path is correct
+	 */
 	@Test
 	void filePathTest() {
 		TextAnalyzer test = new TextAnalyzer();
@@ -162,14 +174,18 @@ class JunitTest {
 		assertEquals(path, output);
 	}
 	
-	//test for not null value
+	/**
+	 * test for not null value
+	 */
 	@Test
 	void fileNotNull() {
 		String path = "C:\\Users\\Baataoui Youssef\\Desktop\\text1.txt";
 		assertNotNull(path);
 	}
 	
-	//test for false
+	/**
+	 * test for false
+	 */
 	@Test
 	void checkFalse() {
 		TextAnalyzer test = new TextAnalyzer();
@@ -188,14 +204,18 @@ class JunitTest {
 		assertFalse(output < 5);
 	}
 	
-	//test for not null value
+	/**
+	 * test for not null value
+	 */
 		@Test
 		void fileNull() {
 			String path = "C:\\Users\\Baataoui Youssef\\Desktop\\text1.txt";
 			assertNull(path);
 		}
 	
-	//Test if the method returns 20 items
+	/**
+	 * Test if the method returns 20 items
+	 */
 	@Test
 	void wordsCount() {
 		TextAnalyzer test = new TextAnalyzer();
