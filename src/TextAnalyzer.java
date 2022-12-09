@@ -1,70 +1,167 @@
-import java.util.*;
-import java.io.*;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.*;
 import org.apache.commons.lang.StringUtils;
 
-/**
- * a class that analyze a text and print the words concurrency and print the first 20 words sorted
- * @author Baataoui Youssef
- *
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+
+
+/*
+ * 1- import  
+ * 2- load and register the driver
+ * 3 -create connection
+ * 4- create a statment
+ * 5- execute the statment
+ * 6- process the result
+ * 7- close. 
  */
+public class TextAnalyzer extends Application {
+		
+		static TextField text ;
+		Label lblPrint;
+		static Button btn;
+		static Button btnDisplay;
+		static TextArea ta;
+			
+		private static String url      = "jdbc:mysql://localhost:3306/words";   //database specific url.
+	    private static String user     = "root";
+	    private static String password = "AdminRoot";
+		
+		@Override // Override the start method in the Application class
+		  public void start(Stage primaryStage) throws ClassNotFoundException, IOException {
+			  
+		    // Panel p to hold the label and text field
+		    BorderPane paneForTextField = new BorderPane();
+		    paneForTextField.setPadding(new Insets(5, 5, 5, 5)); 
+		    paneForTextField.setStyle("-fx-border-color: white");
+		    paneForTextField.setLeft(new Label("File name: "));
+		    
+		    text = new TextField();
+		    text.setAlignment(Pos.BOTTOM_RIGHT);
+		    paneForTextField.setCenter(text);
+		    
+		  //button 
+		    BorderPane paneForButton = new BorderPane();
+		    
+		    btn = new Button("Analyse");
+		    paneForButton.setLeft(btn);
 
-public class TextAnalyzer {
+		    btnDisplay = new Button("Display");
+		    //btnDisplay.setAlignment(Pos.BOTTOM_RIGHT);
+		    paneForButton.setRight(btnDisplay);
+		    
+		    BorderPane mainPane = new BorderPane();
+		    // Text area to display contents
+		    ta = new TextArea();
+		    mainPane.setCenter(new ScrollPane(ta));
+		    mainPane.setTop(paneForTextField);
+		    mainPane.setBottom(paneForButton);
+		    
+		    //Create File chooser
+		    FileChooser fileChooser = new FileChooser();
+
+	        Button selectFile = new Button("Select File");
+	        selectFile.setOnAction(e -> {
+	            File file = fileChooser.showOpenDialog(primaryStage);
+	            if (file != null) {
+	            	text.setText(file.getPath());
+	            }
+	        });
+
+	        //VBox vBox = new VBox(button);
+	        paneForTextField.setRight(selectFile);
+	        
+		    
+		 // Create a scene and place it in the stage
+		    Scene scene = new Scene(mainPane, 450, 200, Color.BEIGE);
+		    primaryStage.setTitle("Client"); // Set the stage title
+		    primaryStage.setScene(scene); // Place the scene in the stage
+		    primaryStage.show(); // Display the stage
+ 
+	        TextAnalyzer TA = new TextAnalyzer();
+	        	
+	        btn.setOnAction(e -> {
+		    	//action();
+		    	try {
+					insertData();
+					ta.appendText("Data inserted succesfully into database");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (ClassNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		    	text.clear();
+		    });;
+		    
+		    btnDisplay.setOnAction(e -> {
+		    	display();
+		    });
+		    
+		  //Expand the textErea to fit the whole text
+		    ta.textProperty().addListener((obs,old,niu)->{
+	            Text t = new Text(old+niu);
+	            t.setFont(ta.getFont());
+	            StackPane pane = new StackPane(t);
+	            pane.layout();
+	            double height = t.getLayoutBounds().getHeight();
+	            double padding = 25 ;
+	            ta.setMinHeight(height+padding);
+	        });
+
+    }
 	
 	/**
-	 * 
-	 * @param args the command line arguments - unused
-	 * @throws IOException to generate and exception if an error occurs during handling the file
+	 * display is a method that connect to a database 
+	 * Pull up the data from it 
+	 * and display it in the textArea.
 	 */
-
-	public static void main(String[] args) throws IOException {
-		TextAnalyzer TA = new TextAnalyzer();
-
-		String content = Files.readString(Paths.get(TA.FilePath()));
 		
-		String newContent1 = Between(content, "START", "LICENSE"); // substring the text wanted
-		
-		String[] array = newContent1.split(" "); // split the string into words and put them in an array
-		
-        Map<String, Integer> words = new HashMap<>(); // new hashmap
-        for (String str : array) { 					 // loop through the string array	
-            if (words.containsKey(str)) {			// check if the hashmap containes the str word
-                words.put(str, 1 + words.get(str));  //if the word exist increment it's frequency by 1
-            } else {
-                words.put(str, 1);					// if not add the new word to the hashmap and put its frequency to 1
-            }
-        }
-         
-        LinkedHashMap<String, Integer> reverseSortedMap = new LinkedHashMap<>();
-        
-        reverseSortedMap = TA.reverseMapOrder(words); // 
-
-        //Print values
-        reverseSortedMap.forEach((key, value)-> System.out.println(key + " : " + value));
-
+	public static void display() {
+		//Print the first 20 words from the database ordered descendant
+        try(Connection connection = DriverManager.getConnection(url, user, password)) { //Create a connect to database
+  	      try(Statement statement = connection.createStatement()){ // Create statement
+  	    	String sql = "select * from words order by Frequency desc limit 0, 20"; // sql statement that select all words from the words table
+  	    	// sort them by frequency and print only the first 20
+	          
+	          try(ResultSet result = statement.executeQuery(sql)){ // execute the statement
+	        	  
+	        	  while(result.next()) {
+	        		  String name = result.getString("name"); //Get the words name
+		                int frequency = result.getInt("Frequency"); // get the words frequency
+		                
+		                ta.appendText(name + " " + frequency + "\n");
+		                System.out.println(name + " " + frequency); // print statement
+	        		  
+	        	  }
+	        	
+	          }      
+  	      }
+        	
+        } catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
 	}
-	
-	/**
-	 * reverseMapOrder is a function that takes a map as parameter, sort it, 
-	 * and put just the first 20 words in a new map
-	 * @param words is a map parameter
-	 * @return returns a sorted map of 20 workds
-	 */
-	public LinkedHashMap<String, Integer> reverseMapOrder(Map<String, Integer> words){
-
-        LinkedHashMap<String, Integer> reverseSortedMap = new LinkedHashMap<>();
-         
-        //Use Comparator.reverseOrder() for reverse ordering
-        words.entrySet()
-          .stream()
-          .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-          .limit(20)
-          .forEachOrdered(x -> reverseSortedMap.put(x.getKey(), x.getValue()));
-		
-		return reverseSortedMap;	
-	}
-	
 	
 	//A function that substring a string between two strings.
 	/**
@@ -81,14 +178,88 @@ public class TextAnalyzer {
         
         return FinalString;
     }
-	
+
 	/**
-	 * a function that returns the file path.
-	 * @return returns a file location
+	 * insertData is a method that read the file path from the text field.
+	 * Connect to database and insert words with their currencies to a table in the database. 
 	 */
 	
-	public String FilePath() {
+	 public static void insertData() throws IOException, ClassNotFoundException {
+		 
+		 Class.forName("com.mysql.cj.jdbc.Driver");
+		 
+		String content = Files.readString(Paths.get(text.getText()));
 		
-		return "C:\\Users\\Baataoui Youssef\\Desktop\\text1.txt";
-	}
+		String newContent1 = Between(content, "START", "LICENSE"); // substring the text wanted
+		String contentLowerCase = newContent1.toLowerCase();
+		
+		String[] array = contentLowerCase.split(" "); // split the string into words and put them in an array
+
+        try(Connection connection = DriverManager.getConnection(url, user, password)) {
+
+            for (String str : array) {
+
+                try(Statement statement = connection.createStatement()){
+                    String sql = "select * from words";
+
+                    try(ResultSet result = statement.executeQuery(sql)){
+                        while(result.next()) {
+                            String name = result.getString("name");
+                            int frequency = result.getInt("Frequency");
+                            //System.out.println(frequency);
+                            if(name.equalsIgnoreCase(str)) {
+                                // create our java preparedstatement using a sql update query
+                                PreparedStatement ps = connection.prepareStatement(
+                                        "UPDATE words w SET w.Frequency = ? WHERE w.name =" + '"'+str+'"');
+
+                                // set the preparedstatement parameters
+                                ps.setInt(1,frequency + 1);
+
+                                // call executeUpdate to execute our sql update statement and returns number of rows affected
+                                ps.executeUpdate();
+                                ps.close();
+                            }
+
+                            else if(!(str.equalsIgnoreCase(name))){
+                                PreparedStatement insertNewWord = connection.prepareStatement(
+                                        "INSERT IGNORE INTO words(name, frequency) VALUES (?,?)");// if not add the new word to the hashmap and put its frequency to 1
+                                insertNewWord.setString(1, str);
+                                insertNewWord.setInt(2, 1);
+                                insertNewWord.executeUpdate();
+                                //insertNewWord.close();
+                            }
+                            // System.out.println(name + " " + frequency);
+                        }
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+	 
+	 /**
+	 * Main method to lunch the application
+	 */
+ 
+	 public static void main(String[] args) throws IOException {
+			launch(args);
+	 }
+	
+
 }
+
+
+
+
+
+
+
