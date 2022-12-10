@@ -92,7 +92,7 @@ public class TextAnalyzer extends Application {
 		    
 		 // Create a scene and place it in the stage
 		    Scene scene = new Scene(mainPane, 450, 200, Color.BEIGE);
-		    primaryStage.setTitle("Client"); // Set the stage title
+		    primaryStage.setTitle("Word Occurrences"); // Set the stage title
 		    primaryStage.setScene(scene); // Place the scene in the stage
 		    primaryStage.show(); // Display the stage
  
@@ -144,14 +144,14 @@ public class TextAnalyzer extends Application {
   	    	// sort them by frequency and print only the first 20
 	          
 	          try(ResultSet result = statement.executeQuery(sql)){ // execute the statement
-	        	  
+	        	  int i = 1;
 	        	  while(result.next()) {
 	        		  String name = result.getString("name"); //Get the words name
 		                int frequency = result.getInt("Frequency"); // get the words frequency
 		                
-		                ta.appendText(name + " " + frequency + "\n");
+		                ta.appendText(i + "- \"" +name + "\" " + frequency + "\n");
 		                System.out.println(name + " " + frequency); // print statement
-	        		  
+	        		  i++;
 	        	  }
 	        	
 	          }      
@@ -191,6 +191,10 @@ public class TextAnalyzer extends Application {
 		String content = Files.readString(Paths.get(text.getText()));
 		
 		String newContent1 = Between(content, "START", "LICENSE"); // substring the text wanted
+		
+		newContent1 = newContent1.replaceAll("\\<[^>] *>","");
+		newContent1 = newContent1.replaceAll("&mdash;", " ");
+		newContent1 = newContent1.replaceAll("[^a-zA-Z0-9\\s+]", "");
 		String contentLowerCase = newContent1.toLowerCase();
 		
 		String[] array = contentLowerCase.split(" "); // split the string into words and put them in an array
